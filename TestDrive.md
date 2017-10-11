@@ -140,6 +140,7 @@ Using a template means you only have to write a handler file in your chosen prog
 * Node.js
 * Python
 * CSharp
+* Go
 * Or propose a template for another programming languae
 
 Guides:

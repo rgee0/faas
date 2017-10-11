@@ -1,11 +1,13 @@
 #!/bin/sh
 
+export dockerfile="Dockerfile"
 export arch=$(uname -m)
 
 if [ "$arch" = "armv7l" ] ; then
-    echo "Build not supported on $arch, use cross-build."
-    exit 1
+   dockerfile="Dockerfile.armhf"
 fi
+
+echo Building functions/watchdog:build
 
 if [ ! $http_proxy == "" ] 
 then

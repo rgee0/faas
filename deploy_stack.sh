@@ -5,6 +5,13 @@ if ! [ -x "$(command -v docker)" ]; then
   exit 1
 fi
 
+export yamlfile="docker-compose.yml"
+export arch=$(uname -m)
+
+if [ "$arch" = "armv7l" || "$arch" = "armv6l"] ; then
+   yamlfile="docker-compose.armhf.yml"
+fi
+
 echo "Deploying stack"
-docker stack deploy func --compose-file docker-compose.yml
+docker stack deploy func --compose-file $yamlfile
 

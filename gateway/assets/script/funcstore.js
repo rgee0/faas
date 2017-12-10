@@ -20,7 +20,8 @@ funcStoreModule.component('funcStore', {
     controller: ['FuncStoreService', '$mdDialog', function FuncStoreController(FuncStoreService, $mdDialog) {
         var self = this;
 
-        this.storeUrl = 'https://raw.githubusercontent.com/openfaas/store/master/store.json';
+        this.targetArch = "BUILDCONFIGARCH"
+        this.storeUrl = 'https://raw.githubusercontent.com/rgee0/store/master/store.json';
         this.selectedFunc = null;
         this.functions = [];
         this.message = '';
@@ -35,8 +36,19 @@ funcStoreModule.component('funcStore', {
             return false;
         }
 
+        this.arch = function (func){
+
+            if (func.images){
+                return self.targetArch.toLowerCase() in func.images;
+            }
+            return false;
+        }
+
         this.select = function (func, event) {
             self.selectedFunc = func;
+            if (self.selectedFunc.images && self.selectedFunc.images[this.targetArch]){
+                    self.selectedFunc.image = self.selectedFunc.images[this.targetArch];
+                }
             self.onSelected()(func, event);
         };
 

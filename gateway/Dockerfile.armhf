@@ -25,6 +25,7 @@ ENV https_proxy     ""
 COPY --from=0 /go/src/github.com/openfaas/faas/gateway/gateway    .
 
 COPY assets     assets
+RUN sed -i "s/BUILDCONFIGARCH/$(uname -m)/g" assets/script/funcstore.js
 
 CMD ["./gateway"]
 

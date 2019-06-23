@@ -1,30 +1,6 @@
 #!/bin/bash
 
-# Positions within repos and imagenames are important
-# Associative arrays (-A) would be better but support varies
-
-declare -a repos=(
-    "openfaas-incubator/openfaas-operator"
-    "openfaas-incubator/faas-idler" 
-    "openfaas/faas" 
-    "openfaas/faas"
-    "openfaas/faas-swarm" 
-    "openfaas/nats-queue-worker" 
-    "openfaas/faas-netes" 
-    "openfaas/faas-cli"
-    )
-
-declare -a imagenames=(
-    "openfaas/faas-operator" 
-    "openfaas/faas-idler" 
-    "openfaas/gateway"
-    "openfaas/basic-auth-plugin"
-    "openfaas/faas-swarm" 
-    "openfaas/queue-worker" 
-    "openfaas/faas-netes" 
-    "openfaas/faas-cli"
-    )
-
+declare -a repos=("openfaas-incubator/openfaas-operator" "openfaas-incubator/faas-idler" "openfaas/faas" "openfaas/faas-swarm" "openfaas/nats-queue-worker" "openfaas/faas-netes" "openfaas/faas-cli")
 HERE=`pwd`
 ARCH=$(uname -m)
 
@@ -35,6 +11,20 @@ ARCH=$(uname -m)
 
 #fi
 
+get_image_names() {
+    if  [ "openfaas-incubator/faas-idler" = $1 ]; then
+        images=("openfaas/faas-idler")
+    elif  [ "openfaas/faas" = $1 ]; then
+        images=("openfaas/gateway" "openfaas/basic-auth-plugin")
+    elif  [ "openfaas/nats-queue-worker" = $1 ]; then
+        images=("openfaas/queue-worker")
+    elif  [ "openfaas-incubator/openfaas-operator" = $1 ]; then
+        images=("openfaas/openfaas-operator")
+    else
+        images=($1)
+    fi
+}
+
 if [ "$ARCH" = "armv7l" ] ; then
    ARM_VERSION="armhf"
 elif [ "$ARCH" = "aarch64" ] ; then
@@ -43,35 +33,48 @@ fi
 
 echo "Target architecture: ${ARM_VERSION}"
 
-for i in "${!repos[@]}"
+for r in "${repos[@]}"
 do
    cd $HERE
 
-   echo -e "\nBuilding: ${imagenames[$i]}\n"
-   git clone https://github.com/${repos[$i]} ./staging/${repos[$i]}
-   cd ./staging/${repos[$i]}
+   echo -e "\nBuilding: $r\n"
+   git clone https://github.com/$r ./staging/$r
+   cd ./staging/$r
    pwd
    export TAG=$(git describe --abbrev=0 --tags)
    echo "Latest release: $TAG"
 
-   REPOSITORY=${imagenames[$i]}
-   TAG_PRESENT=$(curl -s "https://hub.docker.com/v2/repositories/${REPOSITORY}/tags/${TAG}-${ARM_VERSION}/" | grep -Po '"detail": *"[^"]*"' | grep -o 'Not found')
+   get_image_names $r
 
+   for IMAGE in "${images[@]}"
+   do
+      TAG_PRESENT=$(curl -s "https://hub.docker.com/v2/repositories/${IMAGE}/tags/${TAG}-${ARM_VERSION}/" | grep -Po '"detail": *"[^"]*"' | grep -o 'Not found')
+      if [ "$TAG_PRESENT" = "Not found" ]; then
+      break
+      fi
+   done
+   
    if [ "$TAG_PRESENT" = "Not found" ]; then
        make ci-${ARM_VERSION}-build ci-${ARM_VERSION}-push
    else
-       echo "Image is already present: ${REPOSITORY}:${TAG}-${ARM_VERSION}"
+     for IMAGE in "${images[@]}"
+     do
+       echo "Image is already present: ${IMAGE}:${TAG}-${ARM_VERSION}"
+     done
    fi
 done
 
 echo "Docker images"
 
-for i in "${!repos[@]}"
+for r in "${repos[@]}"
 do
    cd $HERE
-   cd ./staging/${repos[$i]}
+   cd ./staging/$r
    export TAG=$(git describe --abbrev=0 --tags)
-   echo "${repos[$i]}"
-   REPOSITORY=${imagenames[$i]}
+   echo "$r"
+   get_image_names $r
+   for i in "${images[@]}"
+   do
    echo " ${REPOSITORY}:${TAG}-${ARM_VERSION}"
+   done
 done

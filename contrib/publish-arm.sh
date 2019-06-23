@@ -73,8 +73,8 @@ do
    export TAG=$(git describe --abbrev=0 --tags)
    echo "$r"
    get_image_names $r
-   for i in "${images[@]}"
+   for IMAGE in "${images[@]}"
    do
-   echo " ${REPOSITORY}:${TAG}-${ARM_VERSION}"
+   echo " ${IMAGE}:${TAG}-${ARM_VERSION}"
    done
 done

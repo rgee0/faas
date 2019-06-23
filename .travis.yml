@@ -29,12 +29,12 @@ after_success:
         echo $DOCKER_PASSWORD | docker login -u=$DOCKER_USERNAME --password-stdin;
         echo $QUAY_PASSWORD | docker login -u=$QUAY_USERNAME --password-stdin quay.io;
         
-        ./ci/tagAndPush.sh "$DOCKER_NS/gateway"
-        ./ci/tagAndPush.sh "$DOCKER_NS/basic-auth-plugin"
-        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" armhf
-        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" arm64
-        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" windows
-        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" x86_64
+        ./ci/tagAndPush.sh "$DOCKER_NS/gateway";
+        ./ci/tagAndPush.sh "$DOCKER_NS/basic-auth-plugin";
+        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" armhf;
+        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" arm64;
+        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" windows;
+        ./ci/tagAndPush.sh "$DOCKER_NS/classic-watchdog" x86_64;
 
         ./watchdog/make_manifest.sh
         docker push $DOCKER_NS/classic-watchdog:$TRAVIS_TAG

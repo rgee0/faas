@@ -2,6 +2,7 @@
 set -e
 
 IMAGE_NAME=$1
+PLATFORM=""
 
 if [ ! -z "$2" ]; then
  PLATFORM="-$2"
